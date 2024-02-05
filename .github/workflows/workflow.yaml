@@ -6,7 +6,7 @@ on:
 
 jobs:
 
-  Push the newly latest Image to Docker hub:
+  push_latest_image_to_docker_hub:
 
     runs-on: ubuntu-latest
 
