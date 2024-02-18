@@ -23,7 +23,7 @@ jobs:
           touch secrets/.env
           touch secrets/route-optima-firebase-adminsdk.json
 
-          echo ${{ secrets.env }} > secrets/.env
+          echo "${{ secrets.env }}" | base64 --decode > secrets/.env
           echo "${{ secrets.route_optima_firebase_adminsdk }}" | base64 --decode > secrets/route-optima-firebase-adminsdk.json
 
     - name: printing secrets files
