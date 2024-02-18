@@ -19,7 +19,7 @@ module.exports.assignRiders = async (req, res) => {
   try {
     const resultsJSON = JSON.parse(
       fs.readFileSync(
-        path.join(__dirname, "../../results/results.json"),
+        path.join(__dirname, "../results/results.json"),
         "utf8"
       )
     );
@@ -139,6 +139,11 @@ module.exports.optimizeRoutes = async (req, res) => {
     
     const riders = await getAllDocuments("rider"); // & Added the riders data to the resultsJson.
     algoResponse["riders"] = riders;
+    
+    fs.writeFileSync(
+      path.join(__dirname, "../results/results.json"),
+      JSON.stringify(algoResponse)
+    );
 
     res.send(algoResponse);
   } catch (error) {
