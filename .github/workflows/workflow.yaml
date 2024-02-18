@@ -20,7 +20,7 @@ jobs:
     - name: Make secrets folder for docker build
       run: |
           mkdir secrets
-          mdkir results
+          mkdir results
           touch secrets/.env
           touch secrets/route-optima-firebase-adminsdk.json
 
