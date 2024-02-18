@@ -26,11 +26,6 @@ jobs:
           echo ${{ secrets.env }} > secrets/.env
           echo "${{ secrets.route_optima_firebase_adminsdk }}" | base64 --decode > secrets/route-optima-firebase-adminsdk.json
 
-    - name: printing secrets
-      run: |
-          cat {{ secrets.env }}
-          cat {{ secrets.route_optima_firebase_adminsdk }}
-
     - name: printing secrets files
       run: |
           cat secrets/.env
