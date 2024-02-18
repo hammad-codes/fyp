@@ -22,8 +22,24 @@ jobs:
           touch secrets/.env
           touch secrets/route-optima-firebase-adminsdk.json
 
-          echo "${{ secrets.env }}" > secrets/.env
-          echo "${{ secrets.route_optima_firebase_adminsdk }}" > secrets/route-optima-firebase-adminsdk.json
+          echo "GOOGLE_CLOUD_API_KEY=AIzaSyBk29tKGAbMZFAzajpnEDbWOYomg12dHJk
+          MAPBOX_ACCESS_TOKEN=pk.eyJ1IjoiaGFtbWFkaGFiaWIiLCJhIjoiY2xrd2dkZTQzMGFiMTNlbjdsOW1sa244eiJ9.15evSXIfwN2IS5AMiaN0DQ
+          EMAIL="YOUR NU EMAIL"
+          PASSWORD="YOUR NU PASSWORD"" > secrets/.env
+          echo "{
+            "type": "service_account",
+            "project_id": "route-optima",
+            "private_key_id": "d6518396f61511c9f7ef0b899ec9cc1524698484",
+            "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCVESBU4dW8fz/R\n48tXXXni/xkBm9rBYOOcFo6QJeJzN61AbOu/b67f3IttrjaT08OUOZiJEUnKGJdy\n8p5yN/jbC0fYeOLjDsrerverc64jWT5kqAJB2C9zmsXNFMml90j2HtC9Kk9gur44\nwiC841pD70AkNDNjIq+A4WQW377euuWfUVxdGFv1NP3LjSCyUkopIo/si9Kzpcgm\n0fTEnv3w+/OH9Wb8HdNe4jK23W/sI883mpn+t1YQSB9wGKCjyXPx8G+VNo/K1tip\n5BBbqUPy9jip9VMzjIEv8JxL/HPmPCfPDtc2/LVV/83fejDx22SdYmvRw9pQi4u8\nWFb9cET7AgMBAAECggEAO3oi4VtecaCAMVnnl0tHx8erDZZHGWN0TaI+bct/6CLt\n8MfE5JRGPTH9O90ID8GtxqWYdBA+1fEr9IRTrhUhKRz+JKRPOvN7BJDhZzp338jK\n+VSD2gvNGx5FEAfcUWkyZmlzNhb8pwa7wV/LujIooPSELi3Z1xNO3WiRDANoX+us\nae9sGpe8RsqhZb4ficbixkWTG+cpDLzWyYQrADO1kO2kID4/CFueSg9xiZkzOIe5\nLkwhw/tPXMy9T4FqKQNDAu2xh8yclMiQ1iwerebGaQLRtHETXQ00hwyKJ5vAiSsB\n8gWol4/lff7TZ/AVPVOANHU+iq29G8D7O6yiI2es0QKBgQDPZKQbjg4eAHCx9VnC\nZ6o1GFfE/WpvtxDRv27M4F3qG6dtXn3G9qChNPoeRUX0mXvmTR/qazRC8DJW/ZkH\n7JO6mkD7RYCldmLZZzkGfZIPJeg3VOANKJyntN4dkaHNHiSw9mFLYcCoS6CLcNvN\nyKY8mEqSqyob89t4skhgEjrFyQKBgQC4APnPmzQJee6T3kW4z7gBW0+DPybSE0k9\nuw20BdO+lcps05NWiArzFGuGZkRnt07VP12eWrqevXqNB2/oB8wjWOl5uG7xjRPL\nRJ3kV5IoC/GY5juGdcKnKs2PsVGdJiOr2/YiKDDPufufSwRtYzdamH9eRE+EfP57\npjwKiaSmowKBgEH6IV8GvST8PN3QUOLQucw0V0+60s6BbZ9ciDIzOo1MiOH5Sogu\nU4GVafCRVyTuYwUsCfg4bKLS6SDVgoaL059sjTmirb91vxKsjO6sqfeZtptLrA9j\nmRqdJoA/oTqw2TlW2DL0ASdJD+TsXXDE4WWriSXJwBauaGaoSPAPPJVJAoGAD2Wl\ngcXO+OwHFsCGvQxErXhikuz55qJOgqfgYawLJ+uI4Mpjjd4cbHLM/JYaK0OfiSCg\nSNv2ucnJM3vn1VaxslOCVfkk73mKqnu3aqAZTtiRAuZhHMNF4o8mXFvOJIRIf90M\nH5eVXgyGDbJNUIn428/e+JhmvwNmmBo08/zIllkCgYAIq5zRzLAimD1qT29bsqpF\nrN+A/lylhHQlwlRaha0+JfC5/E75s62cLaP7iPIQxAPcmTQGBDeVdYQqiSXmHeL9\nQZ7/0nzBpy3eSOdKU6prNHPlTheHPnRLvAfz7sNi9yrJrPx8WaCIT+4Sh779oman\nhlV0nnSn4PCoWv4u9yLK/A==\n-----END PRIVATE KEY-----\n",
+            "client_email": "firebase-adminsdk-ddprl@route-optima.iam.gserviceaccount.com",
+            "client_id": "115635237245628007566",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-ddprl%40route-optima.iam.gserviceaccount.com",
+            "universe_domain": "googleapis.com"
+          }
+          " > secrets/route-optima-firebase-adminsdk.json
 
     - name: printing secrets
       run: |
