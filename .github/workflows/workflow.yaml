@@ -5,41 +5,39 @@ on:
     branches: [ "backend" ]
 
 jobs:
-
   push_latest_image_to_docker_hub:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
+
     - name: Login to Docker Hub
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+
     - name: Make secrets folder for docker build
       run: |
-          rm -rf secrets
           mkdir secrets
           touch secrets/.env
           touch secrets/route-optima-firebase-adminsdk.json
 
-          echo ${{ secrets.env }} > secrets/.env
-          echo ${{ secrets.route_optima_firebase_adminsdk }} > secrets/route-optima-firebase-adminsdk.json
+          echo "${{ secrets.env }}" > secrets/.env
+          echo "${{ secrets.route_optima_firebase_adminsdk }}" > secrets/route-optima-firebase-adminsdk.json
 
     - name: printing secrets
       run: |
-          cat {{ secrets.env }}
-          cat {{ secrets.route_optima_firebase_adminsdk }}
+          echo "${{ secrets.env }}"
+          echo "${{ secrets.route_optima_firebase_adminsdk }}"
 
     - name: printing secrets files
       run: |
           cat secrets/.env
           cat secrets/route-optima-firebase-adminsdk.json
-    
 
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag fyp-backend:latest
+
     - name: Push Docker image
       run: |
           docker tag fyp-backend:latest jawwadhabib/fyp-backend:latest
