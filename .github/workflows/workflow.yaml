@@ -19,6 +19,7 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Make secrets folder for docker build
       run: |
+          rm -rf secrets
           mkdir secrets
           touch secrets/.env
           touch secrets/route-optima-firebase-adminsdk.json
