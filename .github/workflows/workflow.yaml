@@ -17,6 +17,15 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Make secrets folder for docker build
+      run: |
+          mkdir secrets
+          touch secrets/.env
+          touch secrets/route-optima-firebase-adminsdk.json
+          
+          echo ${{ secrets.env }} > secrets/.env
+          echo ${{ secrets.route-optima-firebase-adminsdk }} > secrets/route-optima-firebase-adminsdk.json
+
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag fyp-backend:latest
     - name: Push Docker image
