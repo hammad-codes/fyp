@@ -33,7 +33,8 @@ module.exports.assignRiders = async (req, res) => {
       console.log(`${key}: ${value}`);
 
       const assignmentDocRef = Assignments.doc(`value`);
-      await assignmentDocRef.set(resultsJSON["subroutes"][key]); // * DB Operation
+      console.log(resultsJSON["subroutes"][key]);
+      await assignmentDocRef.set(); // * DB Operation
     }
     // Making a Trip Object and inserting it into the DB
     const trip = new Trip(
