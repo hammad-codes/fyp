@@ -18,19 +18,22 @@ module.exports.renderOptimizeRoutesForm = (req, res) => {
 module.exports.assignRiders = async (req, res) => {
   try {
     const resultsJSON = JSON.parse(
-      fs.readFileSync(
-        path.join(__dirname, "../results/results.json"),
-        "utf8"
-      )
+      fs.readFileSync(path.join(__dirname, "../results/results.json"), "utf8")
     );
 
     const subroutesIDs = [];
     const riderIDs = [];
     // store all the keys of the req.body in the subroutes array and all the values in the riders array
+
+    //make a collection named Assignments
+    const Assignments = db.collection("assignments");
     for (const [key, value] of Object.entries(req.body)) {
       subroutesIDs.push(key);
       riderIDs.push(value);
       console.log(`${key}: ${value}`);
+
+      const assignmentDocRef = Assignments.doc(`value`);
+      await assignmentDocRef.set(resultsJSON["subroutes"][key]); // * DB Operation
     }
     // Making a Trip Object and inserting it into the DB
     const trip = new Trip(
@@ -136,10 +139,10 @@ module.exports.optimizeRoutes = async (req, res) => {
     });
 
     const algoResponse = await response.json();
-    
+
     const riders = await getAllDocuments("rider"); // & Added the riders data to the resultsJson.
     algoResponse["riders"] = riders;
-    
+
     fs.writeFileSync(
       path.join(__dirname, "../results/results.json"),
       JSON.stringify(algoResponse)
@@ -296,4 +299,3 @@ module.exports.emergencyRequests = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
-
