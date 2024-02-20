@@ -4,7 +4,10 @@ const csv = require("csv-parser");
 const { spawn } = require("child_process");
 const path = require("path");
 const { sendCustomerEmail, sendRiderEmail } = require("../utilities/nodemail");
-const { getAllDocuments } = require("../firebase/firebaseUtilities");
+const {
+  getAllDocuments,
+  getDocumentById,
+} = require("../firebase/firebaseUtilities");
 const { getDistanceTimeMatrices } = require("../utilities/mapbox");
 const { insert, db } = require("../firebase/firebaseUtilities");
 const { array } = require("joi");
@@ -14,6 +17,41 @@ const { response } = require("express");
 module.exports.renderOptimizeRoutesForm = (req, res) => {
   res.render("optimizeRoutes.ejs");
 };
+module.exports.getAssignments = async (_, res) => {
+  try {
+    // Get the trip document reference
+    const tripDocumentId = "0a3uW0Lpleewy9yXHLK5";
+    const tripDocRef = db.collection("trip").doc(tripDocumentId);
+
+    // Query subroutes collection where tripRef is equal to the trip document reference
+    const snapshot = await db
+      .collection("subroute")
+      .where("tripRef", "==", tripDocRef)
+      .get();
+
+    // Initialize an array to store subroutes
+    const subroutes = [];
+
+    // Loop through the query snapshot
+    snapshot.forEach((doc) => {
+      // Push subroute data to the subroutes array
+      subroutes.push({
+        id: doc.id,
+        data: doc.data(),
+      });
+    });
+
+    res.send(subroutes);
+  } catch (error) {
+    console.error("Error getting subroutes by trip:", error);
+    throw error;
+  }
+};
+
+// What I want to do is to make a document with the id of the riderID, then in that put all the information of the subroute, in the following way
+{
+
+}
 
 module.exports.assignRiders = async (req, res) => {
   try {
@@ -32,9 +70,11 @@ module.exports.assignRiders = async (req, res) => {
       riderIDs.push(value);
       console.log(`${key}: ${value}`);
 
-      const assignmentDocRef = Assignments.doc(`value`);
-      console.log(resultsJSON["subroutes"][key]);
-      await assignmentDocRef.set(); // * DB Operation
+      const assignmentDocRef = Assignments.doc(`${value}`);
+
+      const subroute_id = parseInt(key.match(/\d+/)[0]);
+      // console.log(resultsJSON["subroutes"][subroute_id]);
+      await assignmentDocRef.set(resultsJSON["subroutes"][subroute_id]); // * DB Operation
     }
     // Making a Trip Object and inserting it into the DB
     const trip = new Trip(
@@ -47,9 +87,14 @@ module.exports.assignRiders = async (req, res) => {
     const tripRef = await insert("trip", trip); // * DB Operation
 
     const subroutes = resultsJSON["subroutes"];
-
     //For each subroute, create a batch and add all the documents to it
     for (let i = 0; i < subroutes.length; i++) {
+      const riderAssignment = {
+        endTime: null,
+        startTime: null,
+        tripRef: null,
+        parcels: [],
+      };
       const batch = db.batch(); // * DB Operation --> Creating a batch
 
       const parcelRefs = [];
@@ -81,7 +126,18 @@ module.exports.assignRiders = async (req, res) => {
           weight: customer_stat["demand"],
           service_time: customer_stat["service_time"],
         };
-
+        //for assignments collection
+        const raParcel = {
+          location: location,
+          receiver: customer,
+          ready_time: parcel.ready_time,
+          due_time: parcel.due_time,
+          arrival_time:parcel.arrival_time,
+          weight: parcel.weight,
+          service_time: parcel.weight
+        }
+        riderAssignment.parcels.push(raParcel);
+        // for assignments collection
         // ! EMAILS ARE BEING SENT HERE, COMMENTING IT TEMPORARILY.
         // sendCustomerEmail(
         //   customer.email,
@@ -94,9 +150,8 @@ module.exports.assignRiders = async (req, res) => {
         batch.set(parcelRef, parcel); // * DB Operation
         parcelRefs.push(parcelRef);
       }
-      // Subroute document is created and added to the batch
-      const riderRef = db.collection("rider").doc(riderIDs[i]);
-      console.log(riderIDs[i]);
+       const riderRef = db.collection("rider").doc(riderIDs[i]);
+      // console.log(riderIDs[i]);
       const subroute = {
         endTime: fixTime(subroutes[i]["subroute_endTime"]),
         startTime: fixTime(subroutes[i]["subroute_startTime"]),
@@ -104,9 +159,17 @@ module.exports.assignRiders = async (req, res) => {
         riderRef: riderRef,
         parcels: parcelRefs,
       };
+      // for assignments collection
+      riderAssignment.endTime = subroute.endTime;
+      riderAssignment.startTime = subroute.startTime;
+      riderAssignment.tripRef = subroute.tripRef;
+
+      const assignmentsRef = db.collection("assignments").doc(riderIDs[i]);
+      batch.set(assignmentsRef,riderAssignment);
+      // for assignments collection
       const subrouteRef = db.collection("subroute").doc();
       batch.set(subrouteRef, subroute); // * DB Operation
-
+      console.log(riderAssignment);
       //! Send Rider Email here.
 
       await batch.commit(); // * DB Operation --> Commiting the batch
@@ -128,7 +191,6 @@ module.exports.optimizeRoutes = async (req, res) => {
     const csvFilePath = req.file.path;
 
     const data = await readCSVFile(csvFilePath, nRiders);
-    // console.log(data);
 
     //send a post request to localhost:5000/optimizeRoute sending the data and get the response
     const response = await fetch("http://fyp-algorithm:5000/optimizeRoute", {
@@ -293,7 +355,6 @@ module.exports.emergencyRequests = async (req, res) => {
       })
     );
 
-    console.log(response);
     res.send(response);
   } catch (error) {
     console.error("Error fetching and populating data:", error);

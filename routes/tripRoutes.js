@@ -14,5 +14,8 @@ router.route("/assignRiders")
 
 router.route("/EmergencyRequests")
     .get(tripController.emergencyRequests);
+
+router.route("/getAssignments")
+    .get(tripController.getAssignments);
     
 module.exports = router;

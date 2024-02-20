@@ -39,3 +39,24 @@ module.exports.getAllDocuments = async (collection) => {
         throw error; // You might want to handle or log the error accordingly in your application
     }
 };
+
+
+module.exports.getDocumentById = async (collection, documentId) => {
+    try {
+        const docRef = firestore.collection(collection).doc(documentId);
+        const doc = await docRef.get();
+
+        if (!doc.exists) {
+            console.log("Document not found:", documentId);
+            return null;
+        }
+
+        return {
+            id: doc.id,
+            data: doc.data()
+        };
+    } catch (error) {
+        console.error("Error getting document:", error);
+        throw error;
+    }
+};
