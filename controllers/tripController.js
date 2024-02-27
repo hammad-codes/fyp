@@ -9,6 +9,7 @@ const {
   getDocumentById,
 } = require("../firebase/firebaseUtilities");
 const { getDistanceTimeMatrices } = require("../utilities/mapbox");
+const {getPolyline} = require("../utilities/googlemaps");
 const { insert, db } = require("../firebase/firebaseUtilities");
 const { array } = require("joi");
 const { response } = require("express");
@@ -18,40 +19,11 @@ module.exports.renderOptimizeRoutesForm = (req, res) => {
   res.render("optimizeRoutes.ejs");
 };
 module.exports.getAssignments = async (_, res) => {
-  try {
-    // Get the trip document reference
-    const tripDocumentId = "0a3uW0Lpleewy9yXHLK5";
-    const tripDocRef = db.collection("trip").doc(tripDocumentId);
-
-    // Query subroutes collection where tripRef is equal to the trip document reference
-    const snapshot = await db
-      .collection("subroute")
-      .where("tripRef", "==", tripDocRef)
-      .get();
-
-    // Initialize an array to store subroutes
-    const subroutes = [];
-
-    // Loop through the query snapshot
-    snapshot.forEach((doc) => {
-      // Push subroute data to the subroutes array
-      subroutes.push({
-        id: doc.id,
-        data: doc.data(),
-      });
-    });
-
-    res.send(subroutes);
-  } catch (error) {
-    console.error("Error getting subroutes by trip:", error);
-    throw error;
-  }
+  const polyline = await getPolyline('New York, NY', 'Los Angeles, CA', ['Joplin, MO', 'Oklahoma City, OK']);
+  console.log(polyline);
+  console.log("Polyline received");
+  res.send(polyline);
 };
-
-// What I want to do is to make a document with the id of the riderID, then in that put all the information of the subroute, in the following way
-{
-
-}
 
 module.exports.assignRiders = async (req, res) => {
   try {
@@ -89,11 +61,27 @@ module.exports.assignRiders = async (req, res) => {
     const subroutes = resultsJSON["subroutes"];
     //For each subroute, create a batch and add all the documents to it
     for (let i = 0; i < subroutes.length; i++) {
+
+      var polylineSource = "Centaurus, Islamabad"; // * For Polyline
+      var polylineDestination = ""; // * For Polyline
+      var polylineWaypoints = []; // * For Polyline
+
       const riderAssignment = {
         endTime: null,
         startTime: null,
         tripRef: null,
         parcels: [],
+        //additional Information
+        actualStartTime: "null",
+        actualEndTime: "null",
+        status: "assigned",
+        totalParcels: subroutes[i]["customer_stats"].length,
+        parcelsDelivered: 0,
+        parcelsRemaining: subroutes[i]["customer_stats"].length,
+        unableToDeliver: 0,
+        alertsGenerated: 0,
+        distanceCovered: 0,
+        totalDistance: subroutes[i]["subroute_cost"],
       };
       const batch = db.batch(); // * DB Operation --> Creating a batch
 
@@ -110,7 +98,7 @@ module.exports.assignRiders = async (req, res) => {
           name: customer_stat["customer_info"]["name"],
           phone: customer_stat["customer_info"]["phone"],
         };
-
+        polylineWaypoints.push(customer.address); // * For Polyline
         const locationRef = db.collection("location").doc();
         const customerRef = db.collection("customer").doc();
 
@@ -134,7 +122,15 @@ module.exports.assignRiders = async (req, res) => {
           due_time: parcel.due_time,
           arrival_time:parcel.arrival_time,
           weight: parcel.weight,
-          service_time: parcel.weight
+          service_time: parcel.weight,
+          //additional Information
+          status:"pending",
+          receiverName: "null",
+          deliveryProofLink: "null",
+          actualStartTime: "null",
+          actualEndTime: "null",
+          nItems: 1,
+
         }
         riderAssignment.parcels.push(raParcel);
         // for assignments collection
@@ -150,6 +146,17 @@ module.exports.assignRiders = async (req, res) => {
         batch.set(parcelRef, parcel); // * DB Operation
         parcelRefs.push(parcelRef);
       }
+      polylineDestination = polylineWaypoints.pop(); // * For Polyline
+      const polyline = await getPolyline(polylineSource, polylineDestination, polylineWaypoints); // * For Polyline
+      const riderLocation = {
+        lat: polyline[0].lat,
+        long: polyline[0].long,
+        polylineId: 1,
+        polyline: polyline,
+        riderLocation: polylineSource,
+      }
+      const riderLocationRef = db.collection("riderLocation").doc(riderIDs[i]);
+      batch.set(riderLocationRef, riderLocation); // * DB Operation
        const riderRef = db.collection("rider").doc(riderIDs[i]);
       // console.log(riderIDs[i]);
       const subroute = {

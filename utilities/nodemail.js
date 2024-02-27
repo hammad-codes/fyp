@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+
 require("dotenv").config({ path: "secrets/.env" });
 
 // Create a transporter object
@@ -40,3 +41,4 @@ module.exports.sendRiderEmail = async (to, rider, date, time) => {
   const response = await transporter.sendMail(mailOptions);
   return response.response;
 };
+
