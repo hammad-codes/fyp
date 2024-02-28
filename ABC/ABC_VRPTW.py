@@ -254,7 +254,17 @@ def getRouteStats(routes: list, instance: dict) -> list:
         routesStats.append(routeStat)
     return routesStats
 
-        
+def split(results):
+    # add a new dictionary to the results[subroutes] list
+    results['subroutes'].append( results['subroutes'][0].copy())
+    results['subroutes'][1]['customer_stats'] = results['subroutes'][1]['customer_stats'][6:]
+    results['subroutes'][0]['customer_stats'] = results['subroutes'][0]['customer_stats'][:6]
+    
+    results['subroutes'][1]['subroute'] = results['subroutes'][1]['subroute'][6:]
+    results['subroutes'][0]['subroute'] = results['subroutes'][0]['subroute'][:6]
+    
+    results['subroutes'][1]['subroute_id'] = 1
+    return 
 def run():
     
     dataset = 'input'
@@ -267,7 +277,7 @@ def run():
                          upper=[ndim]*ndim,
                          fun=evaluator,
                          numb_bees=1,
-                         max_itrs=100,
+                         max_itrs=1000,
                          instance=load_instance('./data/json/'+dataset+'.json'))
 
     # runs model
@@ -289,6 +299,7 @@ def run():
     
     results['dataset']=dataset
     
+    split(results) #! Need to remove this adding for testing functionality.
     return results
 
 if __name__ == "__main__":
@@ -297,6 +308,7 @@ if __name__ == "__main__":
     endTime = time.time()
     runTime = endTime - startTime
     # print("Total Run Time: ", runTime)
+
 
 # ---- END
 
