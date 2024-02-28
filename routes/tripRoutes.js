@@ -6,7 +6,6 @@ const multer = require("multer"); // To handle file uploads
 const upload = multer({ dest: "uploads/" }); // Define the destination folder for uploaded files
 
 router.route("/optimizeRoutes")
-    .get(tripController.renderOptimizeRoutesForm)
     .post(upload.single("csvFile"), tripController.optimizeRoutes);
 
 router.route("/assignRiders")
@@ -14,8 +13,5 @@ router.route("/assignRiders")
 
 router.route("/EmergencyRequests")
     .get(tripController.emergencyRequests);
-
-router.route("/getAssignments")
-    .get(tripController.getAssignments);
     
 module.exports = router;

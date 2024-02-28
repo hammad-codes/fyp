@@ -9,33 +9,30 @@ const {
   getDocumentById,
 } = require("../firebase/firebaseUtilities");
 const { getDistanceTimeMatrices } = require("../utilities/mapbox");
-const {getPolyline} = require("../utilities/googlemaps");
-const { insert, db } = require("../firebase/firebaseUtilities");
+const { getPolylines: getPolylines, getPolyline: getPolyline} = require("../utilities/googlemaps");
+const { insert, db,deleteCollection } = require("../firebase/firebaseUtilities");
 const { array } = require("joi");
-const { response } = require("express");
+const { response, json } = require("express");
 
 // TODO --> Send the Email to the customer, riders.
-module.exports.renderOptimizeRoutesForm = (req, res) => {
-  res.render("optimizeRoutes.ejs");
-};
-module.exports.getAssignments = async (_, res) => {
-  const polyline = await getPolyline('New York, NY', 'Los Angeles, CA', ['Joplin, MO', 'Oklahoma City, OK']);
-  console.log(polyline);
-  console.log("Polyline received");
-  res.send(polyline);
-};
 
 module.exports.assignRiders = async (req, res) => {
+
   try {
+
+    //Read the results.json file 
     const resultsJSON = JSON.parse(
       fs.readFileSync(path.join(__dirname, "../results/results.json"), "utf8")
     );
-
     const subroutesIDs = [];
     const riderIDs = [];
+    
+    // Delete  the assignments and riderLocation collection
+    await deleteCollection("assignments");
+    await deleteCollection("riderLocation");
+    //--------------------------------------------------------------------------------
+    
     // store all the keys of the req.body in the subroutes array and all the values in the riders array
-
-    //make a collection named Assignments
     const Assignments = db.collection("assignments");
     for (const [key, value] of Object.entries(req.body)) {
       subroutesIDs.push(key);
@@ -48,6 +45,8 @@ module.exports.assignRiders = async (req, res) => {
       // console.log(resultsJSON["subroutes"][subroute_id]);
       await assignmentDocRef.set(resultsJSON["subroutes"][subroute_id]); // * DB Operation
     }
+    //--------------------------------------------------------------------------------
+  
     // Making a Trip Object and inserting it into the DB
     const trip = new Trip(
       resultsJSON["nRiders"],
@@ -57,11 +56,10 @@ module.exports.assignRiders = async (req, res) => {
       new Date().toLocaleDateString()
     ).toObject();
     const tripRef = await insert("trip", trip); // * DB Operation
-
-    const subroutes = resultsJSON["subroutes"];
+    //--------------------------------------------------------------------------------
     //For each subroute, create a batch and add all the documents to it
+    const subroutes = resultsJSON["subroutes"];
     for (let i = 0; i < subroutes.length; i++) {
-
       var polylineSource = "Centaurus, Islamabad"; // * For Polyline
       var polylineDestination = ""; // * For Polyline
       var polylineWaypoints = []; // * For Polyline
@@ -82,9 +80,10 @@ module.exports.assignRiders = async (req, res) => {
         alertsGenerated: 0,
         distanceCovered: 0,
         totalDistance: subroutes[i]["subroute_cost"],
+        riderInfo: resultsJSON['riders'].find(rider => rider.id === riderIDs[i]).data,
       };
+      
       const batch = db.batch(); // * DB Operation --> Creating a batch
-
       const parcelRefs = [];
       //For each each parcel in the subroute, create the customer, location and parcel documents and add them to the batch
       for (let j = 0; j < subroutes[i]["customer_stats"].length; j++) {
@@ -120,18 +119,17 @@ module.exports.assignRiders = async (req, res) => {
           receiver: customer,
           ready_time: parcel.ready_time,
           due_time: parcel.due_time,
-          arrival_time:parcel.arrival_time,
+          arrival_time: parcel.arrival_time,
           weight: parcel.weight,
           service_time: parcel.weight,
           //additional Information
-          status:"pending",
+          status: "pending",
           receiverName: "null",
           deliveryProofLink: "null",
           actualStartTime: "null",
           actualEndTime: "null",
           nItems: 1,
-
-        }
+        };
         riderAssignment.parcels.push(raParcel);
         // for assignments collection
         // ! EMAILS ARE BEING SENT HERE, COMMENTING IT TEMPORARILY.
@@ -147,17 +145,27 @@ module.exports.assignRiders = async (req, res) => {
         parcelRefs.push(parcelRef);
       }
       polylineDestination = polylineWaypoints.pop(); // * For Polyline
-      const polyline = await getPolyline(polylineSource, polylineDestination, polylineWaypoints); // * For Polyline
+      // const polyline = await getPolylines(
+      //   polylineSource,
+      //   polylineDestination,
+      //   polylineWaypoints
+      // ); // * For Polyline
+
+      const polylines = subroutes[i]["polylines"];
+      const polyline = subroutes[i]["polyline"];
       const riderLocation = {
-        lat: polyline[0].lat,
-        long: polyline[0].long,
-        polylineId: 1,
+        polylineId:0,
+        riderLocation: polylines[0].source,
+        riderCoordinates: {
+          lat: polylines[0].sourceCoordinates.lat,
+          long: polylines[0].destinationCoordinates.long,
+        },
+        polylines: polylines,
         polyline: polyline,
-        riderLocation: polylineSource,
-      }
+      };
       const riderLocationRef = db.collection("riderLocation").doc(riderIDs[i]);
       batch.set(riderLocationRef, riderLocation); // * DB Operation
-       const riderRef = db.collection("rider").doc(riderIDs[i]);
+      const riderRef = db.collection("rider").doc(riderIDs[i]);
       // console.log(riderIDs[i]);
       const subroute = {
         endTime: fixTime(subroutes[i]["subroute_endTime"]),
@@ -172,11 +180,10 @@ module.exports.assignRiders = async (req, res) => {
       riderAssignment.tripRef = subroute.tripRef;
 
       const assignmentsRef = db.collection("assignments").doc(riderIDs[i]);
-      batch.set(assignmentsRef,riderAssignment);
+      batch.set(assignmentsRef, riderAssignment);
       // for assignments collection
       const subrouteRef = db.collection("subroute").doc();
       batch.set(subrouteRef, subroute); // * DB Operation
-      console.log(riderAssignment);
       //! Send Rider Email here.
 
       await batch.commit(); // * DB Operation --> Commiting the batch
@@ -199,8 +206,15 @@ module.exports.optimizeRoutes = async (req, res) => {
 
     const data = await readCSVFile(csvFilePath, nRiders);
 
+    //! Uncomment Above Lines of code
+
+    // const data = JSON.parse(
+    //   fs.readFileSync(path.join(__dirname, "./data.json"), "utf8")
+    // );
+
     //send a post request to localhost:5000/optimizeRoute sending the data and get the response
     const response = await fetch("http://fyp-algorithm:5000/optimizeRoute", {
+      // ! Change it back to http://fyp-algorithm:5000/optimizeRoute before pushing
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -209,6 +223,39 @@ module.exports.optimizeRoutes = async (req, res) => {
     });
 
     const algoResponse = await response.json();
+
+    const polylinePromises = []; //To store all the promises for the polyline function calls
+    const polylinesPromises = []; //To store all the promises for the polylines function calls
+
+    for (const subroute of algoResponse["subroutes"]) {
+      var polylineSource = "Centaurus, Islamabad"; // * For Polyline
+      var polylineDestination = ""; // * For Polyline
+      var polylineWaypoints = []; // * For Polyline
+      var polylineWaypointCoordinates = []; // ! Can cause error Look at it 
+
+      polylineWaypointCoordinates.push({ lat: 33.70817, long: 73.04946 }); // * For Polylines
+      for (const customer of subroute["customer_stats"]) {
+        polylineWaypoints.push(customer["customer_info"]["address"]); // * For Polyline
+        polylineWaypointCoordinates.push(customer["coordinates"]); // * For Polylines
+      }
+      polylineDestination = polylineWaypoints.pop(); // * For Polyline
+
+      polylinePromises.push(getPolyline(polylineSource, polylineDestination, polylineWaypoints,polylineWaypointCoordinates).then((polyline) => {
+        subroute["polyline"] = {
+          source: polylineSource,
+          destination: polylineDestination,
+          sourceCoordinates: polyline[0],
+          destinationCoordinates: polyline[polyline.length - 1],
+          polyline: polyline,
+        };
+      }));
+
+      polylinesPromises.push(getPolylines(polylineSource, polylineDestination, polylineWaypoints,polylineWaypointCoordinates).then((polylines) => {
+        subroute["polylines"] = polylines;
+      }));
+    }
+    await Promise.all(polylinePromises);
+    await Promise.all(polylinesPromises);
 
     const riders = await getAllDocuments("rider"); // & Added the riders data to the resultsJson.
     algoResponse["riders"] = riders;
@@ -280,7 +327,7 @@ const preprocessData = async (csvResults, nRiders) => {
         email: element["email"],
         address: element["address"],
       },
-      coordincates: { lat: "31.5204", lng: "74.3587" },
+      coordincates: { lat: 31.5204, long: 74.3587 },
       demand: parseInt(element["demand"]),
       ready_time: ready_time,
       due_time: due_time,

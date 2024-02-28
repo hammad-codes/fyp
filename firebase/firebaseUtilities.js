@@ -60,3 +60,25 @@ module.exports.getDocumentById = async (collection, documentId) => {
         throw error;
     }
 };
+
+module.exports.deleteCollection = async (collection) => {
+    try {
+        const snapshot = await firestore.collection(collection).get();
+
+        if (snapshot.empty) {
+            console.log("No documents found in the collection:", collection);
+            return;
+        }
+
+        const batch = firestore.batch();
+        snapshot.forEach((doc) => {
+            batch.delete(doc.ref);
+        });
+
+        await batch.commit();
+        console.log("Collection deleted:", collection);
+    } catch (error) {
+        console.error("Error deleting collection:", error);
+        throw error;
+    }
+}
