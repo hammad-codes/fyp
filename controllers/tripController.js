@@ -11,9 +11,9 @@ const {
 const { getDistanceTimeMatrices } = require("../utilities/mapbox");
 const { getPolylines: getPolylines, getPolyline: getPolyline} = require("../utilities/googlemaps");
 const { insert, db,deleteCollection } = require("../firebase/firebaseUtilities");
-const { array } = require("joi");
+const { array, exist } = require("joi");
 const { response, json } = require("express");
-
+const algoAPI = process.env.ALGO_API;
 // TODO --> Send the Email to the customer, riders.
 
 module.exports.assignRiders = async (req, res) => {
@@ -206,14 +206,8 @@ module.exports.optimizeRoutes = async (req, res) => {
 
     const data = await readCSVFile(csvFilePath, nRiders);
 
-    //! Uncomment Above Lines of code
-
-    // const data = JSON.parse(
-    //   fs.readFileSync(path.join(__dirname, "./data.json"), "utf8")
-    // );
-
     //send a post request to localhost:5000/optimizeRoute sending the data and get the response
-    const response = await fetch("http://fyp-algorithm:5000/optimizeRoute", {
+    const response = await fetch(`http://${algoAPI}/optimizeRoute`, {
       // ! Change it back to http://fyp-algorithm:5000/optimizeRoute before pushing
       method: "POST",
       headers: {
