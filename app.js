@@ -12,7 +12,7 @@ const adminDB = require("./firebase/adminDB");
 const adminRoutes = require('./routes/adminRoutes');
 const riderRoutes = require('./routes/riderRoutes');
 const tripRoutes = require('./routes/tripRoutes');
-
+const apiRoutes = require('./routes/apiRoutes');
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
@@ -29,6 +29,7 @@ app.use(cors());
 app.use('/', adminRoutes);
 app.use('/rider', riderRoutes);
 app.use('/trip', tripRoutes);
+app.use('/api', apiRoutes);
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 app.get("*", (req, res) => {
   res.send("404 Not Found, Please follow correct routes. Thanks !");

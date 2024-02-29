@@ -10,8 +10,5 @@ router.route("/optimizeRoutes")
 
 router.route("/assignRiders")
     .post(tripController.assignRiders);
-
-router.route("/EmergencyRequests")
-    .get(tripController.emergencyRequests);
     
 module.exports = router;
