@@ -165,7 +165,7 @@ module.exports.geoCode = async (addresses) => {
                 const location = result.geometry.location;
 
                 // Resolve the promise with latitude and longitude
-                resolve({ lat: location.lat, lng: location.lng });
+                resolve({ lat: location.lat, long: location.lng });
               } else {
                 reject(new Error(`No results found for address: ${address}`));
               }
