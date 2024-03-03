@@ -9,7 +9,7 @@ const {
   getDocumentById,
 } = require("../firebase/firebaseUtilities");
 const { getDistanceTimeMatrices } = require("../utilities/mapbox");
-const { getPolylines: getPolylines, getPolyline: getPolyline} = require("../utilities/googlemaps");
+const { getPolylines: getPolylines, getPolyline: getPolyline, geoCode: geoCode} = require("../utilities/googlemaps");
 const { insert, db,deleteCollection } = require("../firebase/firebaseUtilities");
 const { array, exist } = require("joi");
 const { response, json } = require("express");
@@ -226,8 +226,8 @@ module.exports.optimizeRoutes = async (req, res) => {
       var polylineDestination = ""; // * For Polyline
       var polylineWaypoints = []; // * For Polyline
       var polylineWaypointCoordinates = []; // ! Can cause error Look at it 
-
-      polylineWaypointCoordinates.push({ lat: 33.70817, long: 73.04946 }); // * For Polylines
+      33.707852313006086, 73.05026456749465 //Coordinates for Centaurus, Islamabad
+      polylineWaypointCoordinates.push({ lat: 33.707852313006086, long: 73.05026456749465 }); // * For Polylines
       for (const customer of subroute["customer_stats"]) {
         polylineWaypoints.push(customer["customer_info"]["address"]); // * For Polyline
         polylineWaypointCoordinates.push(customer["coordinates"]); // * For Polylines
@@ -301,7 +301,10 @@ const preprocessData = async (csvResults, nRiders) => {
     max_vehicle_number: max_vehicle_number,
     vehicle_capacity: vehicle_capacity,
   };
-
+  
+  const locations = csvResults.map((element) => element["address"]);
+  const geoCodes = await geoCode(locations);
+  console.log(locations);
   csvResults.forEach((element, index) => {
     const key = index === 0 ? "depart" : `customer_${index}`;
 
@@ -321,7 +324,7 @@ const preprocessData = async (csvResults, nRiders) => {
         email: element["email"],
         address: element["address"],
       },
-      coordincates: { lat: 31.5204, long: 74.3587 },
+      coordinates: geoCodes[index],
       demand: parseInt(element["demand"]),
       ready_time: ready_time,
       due_time: due_time,
@@ -329,7 +332,6 @@ const preprocessData = async (csvResults, nRiders) => {
     };
   });
   // extract all the addresses from the csvResults
-  const locations = csvResults.map((element) => element["address"]);
   // const [distanceMatrix, timeMatrix] = syntheticMatrices(Number_of_customers);
 
   const [distanceMatrix, timeMatrix] = await getDistanceTimeMatrices(locations);
