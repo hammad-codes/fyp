@@ -7,16 +7,15 @@ require("dotenv").config({ path: "secrets/.env" });
 
 //Function below is used to get multiple polylines for each origin to destination pair
 module.exports.getPolylines = async (origin, destination, waypoints,polylineWaypointCoordinates) => {
-  waypoints.unshift(origin);
-  waypoints.push(destination);
-
-  // Array to store promises for each leg
+  waypoints.unshift(origin); // Add the origin to the waypoints array
+  waypoints.push(destination); 
+    // Array to store promises for each leg
   const promises = [];
 
   // Construct the request URLs and create promises for each leg
   for (let i = 0; i < waypoints.length - 1; i++) {
-    const fromCoordinates = polylineWaypointCoordinates[i];
-    const toCoordinates = polylineWaypointCoordinates[i + 1];
+    // const fromCoordinates = polylineWaypointCoordinates[i];
+    // const toCoordinates = polylineWaypointCoordinates[i + 1];
     const from = waypoints[i];
     const to = waypoints[i + 1];
     const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(
@@ -39,8 +38,8 @@ module.exports.getPolylines = async (origin, destination, waypoints,polylineWayp
             return {
               'source': from,
               'destination': to,
-              'sourceCoordinates': fromCoordinates,
-              'destinationCoordinates': toCoordinates,
+              'sourceCoordinates': formattedPolyline[0],
+              'destinationCoordinates': formattedPolyline[formattedPolyline.length - 1],
               'polyline': formattedPolyline
             };
           }

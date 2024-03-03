@@ -331,6 +331,7 @@ const preprocessData = async (csvResults, nRiders) => {
   // extract all the addresses from the csvResults
   const locations = csvResults.map((element) => element["address"]);
   // const [distanceMatrix, timeMatrix] = syntheticMatrices(Number_of_customers);
+
   const [distanceMatrix, timeMatrix] = await getDistanceTimeMatrices(locations);
 
   data["distance_matrix"] = distanceMatrix;

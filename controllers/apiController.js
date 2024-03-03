@@ -74,7 +74,9 @@ module.exports.emergencyRequests = async (req, res) => {
         }
 
         if (emergencyRequest.data.riderRef != null) {
+          const riderId = emergencyRequest.data.riderRef.id;
           const rider = await emergencyRequest.data.riderRef.get();
+          emergencyRequestJson.riderId= riderId;
           emergencyRequestJson.rider = rider.data();
         }
 
@@ -82,7 +84,6 @@ module.exports.emergencyRequests = async (req, res) => {
           .toDate()
           .toLocaleTimeString();
 
-        console.log(emergencyRequestJson.timestamp);
         return emergencyRequestJson;
       })
     );
