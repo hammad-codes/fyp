@@ -212,7 +212,7 @@ def getRouteStats(routes: list, instance: dict) -> list:
             customer_stat = {}
             
             # if i == 0:
-            customer_stat['coordinates'] = instance["customer_{}".format(customer_id)]['coordincates']
+            customer_stat['coordinates'] = instance["customer_{}".format(customer_id)]['coordinates']
             # else:
                 # customer_stat['coordinates'] = 'customer'
             
