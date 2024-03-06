@@ -5,6 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
+
     return 'Send a post request at /optimizeRoute!'
 
 @app.route('/optimizeRoute', methods=['POST'])

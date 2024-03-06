@@ -200,7 +200,7 @@ def getRouteStats(routes: list, instance: dict) -> list:
             'subroute_id':subroute_id,
             'subroute_cost': getRouteCost(sub_route, instance, 1),
             'subroute_TWV': getTimeWindowViolation(sub_route, instance),
-            'subroute_startTime': instance["customer_{}".format(sub_route[0])]["ready_time"]-instance["time_matrix"][0][sub_route[1]],
+            'subroute_startTime': instance["customer_{}".format(sub_route[0])]["ready_time"]-instance["time_matrix"][0][sub_route[0]], # Time to reach the first customer
             'nTWV': 0,
             'subroute': sub_route,
         }   
@@ -254,17 +254,32 @@ def getRouteStats(routes: list, instance: dict) -> list:
         routesStats.append(routeStat)
     return routesStats
 
-def split(results):
-    # add a new dictionary to the results[subroutes] list
-    results['subroutes'].append( results['subroutes'][0].copy())
-    results['subroutes'][1]['customer_stats'] = results['subroutes'][1]['customer_stats'][6:]
-    results['subroutes'][0]['customer_stats'] = results['subroutes'][0]['customer_stats'][:6]
+# def split(results):
+#     # add a new dictionary to the results[subroutes] list
+#     results['subroutes'].append( results['subroutes'][0].copy())
+#     results['subroutes'][1]['customer_stats'] = results['subroutes'][1]['customer_stats'][6:]
+#     results['subroutes'][0]['customer_stats'] = results['subroutes'][0]['customer_stats'][:6]
     
-    results['subroutes'][1]['subroute'] = results['subroutes'][1]['subroute'][6:]
-    results['subroutes'][0]['subroute'] = results['subroutes'][0]['subroute'][:6]
+#     results['subroutes'][1]['subroute'] = results['subroutes'][1]['subroute'][6:]
+#     results['subroutes'][0]['subroute'] = results['subroutes'][0]['subroute'][:6]
     
-    results['subroutes'][1]['subroute_id'] = 1
-    return 
+#     results['subroutes'][1]['subroute_id'] = 1
+#     return 
+
+
+def divideAmongRiders(individual, instance,nRiders):
+    
+    if nRiders == 1:
+        return [individual]
+    
+    if nRiders>= len(individual):
+        return [[i] for i in individual]
+
+    routes = []
+    n = len(individual)
+    for i in range(nRiders):
+        routes.append(individual[i*n//nRiders:(i+1)*n//nRiders])
+    return routes
 def run():
     
     dataset = 'input'
@@ -285,7 +300,10 @@ def run():
     
     solution = model.solution
     print(solution)
-    routes = routeToSubroute(solution, load_instance('./data/json/'+dataset+'.json'))
+    # routes = routeToSubroute(solution, load_instance('./data/json/'+dataset+'.json'))
+    # divideAmongRiders
+    routes = divideAmongRiders(solution, load_instance('./data/json/'+dataset+'.json'), int(instance['max_vehicle_number']))
+    # print(routes)
     routeStats = getRouteStats(routes, load_instance('./data/json/'+dataset+'.json'))
     results = {}
     results['subroutes'] = routeStats
@@ -299,7 +317,7 @@ def run():
     
     results['dataset']=dataset
     
-    split(results) #! Need to remove this adding for testing functionality.
+    # split(results) #! Need to remove this adding for testing functionality.
     return results
 
 if __name__ == "__main__":
