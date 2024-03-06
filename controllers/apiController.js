@@ -4,6 +4,29 @@ const {
 } = require("../firebase/firebaseUtilities");
 const { get } = require("../routes/tripRoutes");
 
+module.exports.tripStatus = async (req, res) => {
+  try {
+    const assinmentsResponse = await getAllDocuments("assignments");
+    const tripStatus = []
+    for(let i = 0; i < assinmentsResponse.length; i++){
+      assignment = assinmentsResponse[i];
+      tripStatus.push(
+        {
+          id: assignment.id,
+          parcelsRemaining: assignment.data.parcelsRemaining,
+          parcelsDelivered: assignment.data.parcelsDelivered,
+          totalParcels : assignment.data.totalParcels,
+          unableToDeliver: assignment.data.unableToDeliver
+        }
+      )
+    }
+    res.send(tripStatus);
+  } catch (error) {
+    console.error("Error fetching the trip Status:", error);
+    res.status(500).send("Internal Server Error");
+  }
+}
+
 module.exports.assignmentById = async (req, res) => {
   const { id } = req.query;
   try {
@@ -80,9 +103,14 @@ module.exports.emergencyRequests = async (req, res) => {
           emergencyRequestJson.rider = rider.data();
         }
 
-        emergencyRequestJson.timestamp = emergencyRequest.data.timestamp
-          .toDate()
-          .toLocaleTimeString();
+        try {
+          emergencyRequestJson.timestamp = emergencyRequest.data.timestamp
+            .toDate()
+            .toLocaleTimeString();
+        } catch (error) {
+          console.error("Error converting timestamp:", error);
+          // Handle the error here, such as setting a default value or sending an error response
+        }
 
         return emergencyRequestJson;
       })

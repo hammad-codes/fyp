@@ -10,7 +10,7 @@ const {
 } = require("../firebase/firebaseUtilities");
 const { getDistanceTimeMatrices } = require("../utilities/mapbox");
 const { getPolylines: getPolylines, getPolyline: getPolyline, geoCode: geoCode} = require("../utilities/googlemaps");
-const { insert, db,deleteCollection } = require("../firebase/firebaseUtilities");
+const { insert, db,deleteCollection,updateAllAssignments } = require("../firebase/firebaseUtilities");
 const { array, exist } = require("joi");
 const { response, json } = require("express");
 const algoAPI = process.env.ALGO_API;
@@ -28,6 +28,7 @@ module.exports.assignRiders = async (req, res) => {
     const riderIDs = [];
     
     // Delete  the assignments and riderLocation collection
+    await updateAllAssignments();
     await deleteCollection("assignments");
     await deleteCollection("riderLocation");
     //--------------------------------------------------------------------------------
@@ -65,6 +66,8 @@ module.exports.assignRiders = async (req, res) => {
       var polylineWaypoints = []; // * For Polyline
 
       const riderAssignment = {
+        //get the current timestamp
+        date: new Date().toLocaleDateString(), 
         endTime: null,
         startTime: null,
         tripRef: null,

@@ -8,5 +8,5 @@ router.route("/assignments").get(apiController.assignments);
 // router.route("/assignments").get(apiController.assignmentById);
 
 router.route("/riderLocation").get(apiController.riderLocation);
-
+router.route("/tripStatus").get(apiController.tripStatus);
 module.exports = router;
