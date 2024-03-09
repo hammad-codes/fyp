@@ -89,18 +89,19 @@ module.exports.emergencyRequests = async (req, res) => {
           id: emergencyRequest.id,
           description: emergencyRequest.data.description,
           type: emergencyRequest.data.type,
+          riderId: emergencyRequest.data.riderId,
         };
+
+        console.log(emergencyRequestJson.riderId);
 
         if (emergencyRequest.data.locationRef != null) {
           const location = await emergencyRequest.data.locationRef.get();
           emergencyRequestJson.location = location.data();
         }
 
-        if (emergencyRequest.data.riderRef != null) {
-          const riderId = emergencyRequest.data.riderRef.id;
-          const rider = await emergencyRequest.data.riderRef.get();
-          emergencyRequestJson.riderId= riderId;
-          emergencyRequestJson.rider = rider.data();
+        if (emergencyRequestJson.riderId != null) {
+          const response = await getDocumentById('rider',emergencyRequestJson.riderId);
+          emergencyRequestJson.rider = response.data;
         }
 
         try {

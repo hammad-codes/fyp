@@ -242,7 +242,7 @@ module.exports.optimizeRoutes = async (req, res) => {
           source: polylineSource,
           destination: polylineDestination,
           sourceCoordinates: polyline[0],
-          destinationCoordinates: polyline[polyline.length - 1],
+          destinationCoordinates: polylineWaypointCoordinates[polylineWaypointCoordinates.length - 1],
           polyline: polyline,
         };
       }));
