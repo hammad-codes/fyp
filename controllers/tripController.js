@@ -10,6 +10,7 @@ const {
 } = require("../firebase/firebaseUtilities");
 const { getDistanceTimeMatrices } = require("../utilities/mapbox");
 const { getPolylines: getPolylines, getPolyline: getPolyline, geoCode: geoCode} = require("../utilities/googlemaps");
+const { getGoogleDistanceTimeMatrices } = require("../utilities/distancematrix");
 const { insert, db,deleteCollection,updateAllAssignments } = require("../firebase/firebaseUtilities");
 const { array, exist } = require("joi");
 const { response, json } = require("express");
@@ -208,7 +209,15 @@ module.exports.optimizeRoutes = async (req, res) => {
     const csvFilePath = req.file.path;
 
     const data = await readCSVFile(csvFilePath, nRiders);
+    //write this to a file
+    fs.writeFileSync(
+      path.join(__dirname, "./tempdata.json"),
+      JSON.stringify(data)
+    );
 
+    res.send("Data Preprocessing Completed");
+    
+    console.log(data);
     //send a post request to localhost:5000/optimizeRoute sending the data and get the response
     const response = await fetch(`http://${algoAPI}/optimizeRoute`, {
       // ! Change it back to http://fyp-algorithm:5000/optimizeRoute before pushing
@@ -337,7 +346,7 @@ const preprocessData = async (csvResults, nRiders) => {
   // extract all the addresses from the csvResults
   // const [distanceMatrix, timeMatrix] = syntheticMatrices(Number_of_customers);
 
-  const [distanceMatrix, timeMatrix] = await getDistanceTimeMatrices(locations);
+  const [distanceMatrix, timeMatrix] = await getGoogleDistanceTimeMatrices(locations);
 
   data["distance_matrix"] = distanceMatrix;
   data["time_matrix"] = timeMatrix;

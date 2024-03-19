@@ -1,6 +1,9 @@
 const axios = require("axios");
 require("dotenv").config({ path: "secrets/.env" });
 const mapboxAccessToken = process.env.MAPBOX_ACCESS_TOKEN;
+const GOOGLE_CLOUD_API_KEY = process.env.GOOGLE_CLOUD_API_KEY;
+
+
 module.exports.getDistanceTimeMatrices = async (locations) => {
   const coordinatesString = await geocodeLocations(
     locations,
