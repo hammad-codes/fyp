@@ -205,6 +205,8 @@ module.exports.assignRiders = async (req, res) => {
       await batch.commit(); // * DB Operation --> Commiting the batch
       console.log("Rider's Assignment Completed");
     }
+    
+    fs.unlinkSync(path.join(__dirname, "../results/results.json")); // * Deleting the results.json file
 
     res.status(200).send("Rider's Assignment Completed");
   } catch (error) {
@@ -306,10 +308,10 @@ module.exports.optimizeRoutes = async (req, res) => {
     const riders = await getAllDocuments("rider"); // & Added the riders data to the resultsJson.
     algoResponse["riders"] = riders;
 
-    // fs.writeFileSync(
-    //   path.join(__dirname, "../results/results.json"),
-    //   JSON.stringify(algoResponse)
-    // );
+    fs.writeFileSync(
+      path.join(__dirname, "../results/results.json"),
+      JSON.stringify(algoResponse)
+    );
 
     res.send(algoResponse);
   } catch (error) {
