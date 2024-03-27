@@ -73,7 +73,6 @@ async function getGoogleDistanceTimeMatrices(locations) {
     console.log('Locations aa gain ')
     console.log(locations)
     const apiKey = process.env.GOOGLE_CLOUD_API_KEY;
-    console.log('API Key', apiKey)
     try {
 
         const response = await getDistanceMatrix(locations, locations, apiKey);
