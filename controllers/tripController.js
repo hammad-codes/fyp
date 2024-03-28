@@ -137,7 +137,7 @@ module.exports.assignRiders = async (req, res) => {
           due_time: parcel.due_time,
           arrival_time: parcel.arrival_time,
           weight: parcel.weight,
-          service_time: parcel.weight,
+          service_time: parcel.service_time,
           //additional Information
           status: "pending",
           receiverName: "null",
