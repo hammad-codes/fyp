@@ -3,6 +3,7 @@ const fs = require("fs");
 const csv = require("csv-parser");
 const { spawn } = require("child_process");
 const path = require("path");
+const crypto = require('crypto');
 const { sendCustomerEmail, sendRiderEmail } = require("../utilities/nodemail");
 const {
   getAllDocuments,
@@ -131,6 +132,7 @@ module.exports.assignRiders = async (req, res) => {
         };
         //for assignments collection
         const raParcel = {
+          parcelId: addTimestampAndHash(customer.cnic),
           location: location,
           receiver: customer,
           ready_time: parcel.ready_time,
@@ -205,7 +207,7 @@ module.exports.assignRiders = async (req, res) => {
       await batch.commit(); // * DB Operation --> Commiting the batch
       console.log("Rider's Assignment Completed");
     }
-    
+
     fs.unlinkSync(path.join(__dirname, "../results/results.json")); // * Deleting the results.json file
 
     res.status(200).send("Rider's Assignment Completed");
@@ -420,7 +422,18 @@ const syntheticMatrices = (Number_of_customers) => {
   }
   return [distanceMatrix, distanceMatrix];
 };
+function addTimestampAndHash(input) {
+  // Generate a timestamp
+  const timestamp = Date.now().toString();
 
+  // Concatenate input and timestamp
+  const dataToHash = input + timestamp;
+
+  // Hash the data
+  const hash = crypto.createHash("sha256").update(dataToHash).digest("hex");
+
+  return hash;
+}
 const fixTime = (time) => {
   const arrival_time = new Date();
   arrival_time.setHours(8, 0, 0, 0);
