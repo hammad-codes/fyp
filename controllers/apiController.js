@@ -1,3 +1,4 @@
+const { string } = require("joi");
 const {
   getAllDocuments,
   getDocumentById,
@@ -92,8 +93,6 @@ module.exports.emergencyRequests = async (req, res) => {
           riderId: emergencyRequest.data.riderId,
         };
 
-        console.log(emergencyRequestJson.riderId);
-
         if (emergencyRequest.data.locationRef != null) {
           const location = await emergencyRequest.data.locationRef.get();
           emergencyRequestJson.location = location.data();
@@ -107,7 +106,6 @@ module.exports.emergencyRequests = async (req, res) => {
         try {
           emergencyRequestJson.timestamp = emergencyRequest.data.timestamp
             .toDate()
-            .toLocaleTimeString();
         } catch (error) {
           console.error("Error converting timestamp:", error);
           // Handle the error here, such as setting a default value or sending an error response
@@ -116,6 +114,24 @@ module.exports.emergencyRequests = async (req, res) => {
         return emergencyRequestJson;
       })
     );
+
+    // Sort the response array by timestamp in descending order
+    response.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    response.forEach((element) => {
+      const originalDate = new Date(element.timestamp);
+      element.timestamp = new Date(element.timestamp * 1000).toLocaleTimeString('en-US', {
+      hour12: true,
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle:'h24'
+      });
+      element.date = originalDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    } );
+    
 
     res.send(response);
   } catch (error) {

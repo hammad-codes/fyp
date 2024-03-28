@@ -245,7 +245,6 @@ module.exports.optimizeRoutes = async (req, res) => {
     });
 
     const algoResponse = await response.json();
-
     // console.log("Algo Response is -->",algoResponse);
 
     const polylinePromises = []; //To store all the promises for the polyline function calls
