@@ -15,29 +15,29 @@ module.exports.register = async (name,cnic,phone,address,email, password) => {
     );
     const riderObj = rider.toObject();
 
-    // var querySnapShot = await firestore.collection("rider").where("cnic", "==", cnic).get();
-    // if (!querySnapShot.empty) {
-    //     return {
-    //         status: false,
-    //         message: "Rider with this cnic already exists",
-    //         uid: null,
-    //     }
-    // }
+    var querySnapShot = await firestore.collection("rider").where("cnic", "==", cnic).get();
+    if (!querySnapShot.empty) {
+        return {
+            status: false,
+            message: "Rider with this cnic already exists",
+            uid: null,
+        }
+    }
 
-    // querySnapShot = await firestore.collection("rider").where("phone", "==", phone).get();
-    // if (!querySnapShot.empty) {
-    //     return {
-    //         status: false,
-    //         message: "Rider with this phone already exists",
-    //         uid: null,
-    //     }
-    // }
+    querySnapShot = await firestore.collection("rider").where("phone", "==", phone).get();
+    if (!querySnapShot.empty) {
+        return {
+            status: false,
+            message: "Rider with this phone already exists",
+            uid: null,
+        }
+    }
 
   try {
-    // const userRecord = await auth.createUser({
-    //   email: email,
-    //   password: password,
-    // });
+    const userRecord = await auth.createUser({
+      email: email,
+      password: password,
+    });
     
     const riderRef = await firestore.collection("rider").add(riderObj);
 
