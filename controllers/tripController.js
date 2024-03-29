@@ -176,7 +176,7 @@ module.exports.assignRiders = async (req, res) => {
         riderLocation: polylines[0].source,
         riderCoordinates: {
           lat: polylines[0].sourceCoordinates.lat,
-          long: polylines[0].destinationCoordinates.long,
+          long: polylines[0].sourceCoordinates.long,
         },
         polylines: polylines,
         polyline: polyline,
