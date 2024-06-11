@@ -3,3 +3,4 @@ uploads/
 secrets/
 results/
 controllers/tempdata.json
+.vercel
